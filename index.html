@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Control de Gastos Pro</title>
+  <title>Control Financiero Pro</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,8 +32,8 @@
     }
 
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text-main); padding: 14px; padding-bottom: 60px; }
-    .card { background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+    body { background: var(--bg); color: var(--text-main); padding: 14px; padding-bottom: 70px; }
+    .card { background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); }
     h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
     label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px; }
     input, select, button { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.95rem; margin-bottom: 10px; background: var(--card-bg); color: var(--text-main); outline: none; }
@@ -43,21 +43,33 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
     .btn-danger { background: var(--danger); padding: 4px 8px; font-size: 0.75rem; width: auto; margin-bottom: 0; }
 
+    /* Pestañas Gasto/Ingreso */
+    .type-toggle { display: flex; background: var(--border); border-radius: 10px; padding: 3px; margin-bottom: 14px; }
+    .type-toggle button { flex: 1; padding: 8px; border-radius: 7px; margin-bottom: 0; background: transparent; color: var(--text-muted); font-size: 0.9rem; }
+    .type-toggle button.active-expense { background: var(--danger); color: white; }
+    .type-toggle button.active-income { background: var(--success); color: white; }
+
+    /* Cabecera Balance */
+    .total-box { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border-radius: 14px; padding: 18px 14px; text-align: center; margin-bottom: 14px; }
+    .total-box .amount { font-size: 2.1rem; font-weight: 800; }
+    .balance-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); }
+    .stat-item { text-align: center; }
+    .stat-label { font-size: 0.7rem; opacity: 0.85; margin-bottom: 2px; }
+    .stat-val { font-size: 0.88rem; font-weight: 700; }
+
+    .progress-bar-wrap { background: rgba(0,0,0,0.08); border-radius: 10px; height: 8px; overflow: hidden; margin: 8px 0; }
+    .progress-bar { height: 100%; width: 0%; transition: width 0.3s, background-color 0.3s; }
+
     .filter-group { display: flex; gap: 6px; margin-bottom: 12px; }
     .filter-btn { background: var(--border); color: var(--text-muted); margin-bottom: 0; flex: 1; padding: 8px; font-size: 0.82rem; }
     .filter-btn.active { background: var(--primary); color: white; }
 
-    .total-box { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 14px; }
-    .total-box .amount { font-size: 2rem; font-weight: 800; }
-
-    .progress-bar-wrap { background: rgba(0,0,0,0.08); border-radius: 10px; height: 10px; overflow: hidden; margin: 8px 0; }
-    .progress-bar { height: 100%; width: 0%; transition: width 0.3s, background-color 0.3s; }
-
     .category-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
     .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-    .badge { font-size: 0.7rem; background: rgba(37,99,235,0.15); color: var(--primary); padding: 2px 7px; border-radius: 6px; font-weight: 600; }
-    .badge-method { font-size: 0.7rem; background: rgba(100,116,139,0.15); color: var(--text-muted); padding: 2px 6px; border-radius: 6px; }
-    .chart-box { position: relative; width: 100%; max-height: 240px; margin: 12px 0; }
+    .badge { font-size: 0.7rem; background: rgba(37,99,235,0.12); color: var(--primary); padding: 2px 7px; border-radius: 6px; font-weight: 600; }
+    .badge-sub { font-size: 0.68rem; background: rgba(100,116,139,0.12); color: var(--text-muted); padding: 2px 6px; border-radius: 6px; }
+
+    .chart-box { position: relative; width: 100%; max-height: 230px; margin: 12px 0; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .backup-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
     .backup-actions button { font-size: 0.75rem; padding: 8px; }
@@ -65,53 +77,90 @@
 </head>
 <body>
 
+  <!-- RESUMEN BALANCE NETO -->
   <div class="total-box">
-    <div style="font-size: 0.82rem; opacity: 0.9;" id="report-title">Gasto Total</div>
-    <div class="amount" id="total-display">$0</div>
-    <div style="font-size: 0.75rem; margin-top: 4px; opacity: 0.85;" id="budget-status-text">Sin presupuesto asignado</div>
-    <div class="progress-bar-wrap">
+    <div style="font-size: 0.8rem; opacity: 0.9;" id="report-title">Balance Neto (Este Mes)</div>
+    <div class="amount" id="net-display">$0</div>
+    
+    <div class="balance-stats">
+      <div class="stat-item">
+        <div class="stat-label">Ingresos</div>
+        <div class="stat-val" id="income-display" style="color: #6ee7b7;">+$0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Gastos</div>
+        <div class="stat-val" id="expense-display" style="color: #fca5a5;">-$0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Tasa Ahorro</div>
+        <div class="stat-val" id="savings-rate-display">0%</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap" style="margin-top: 12px;">
       <div class="progress-bar" id="budget-progress-bar"></div>
     </div>
+    <div style="font-size: 0.72rem; opacity: 0.85; margin-top: 2px;" id="budget-status-text">Sin límite asignado</div>
   </div>
 
+  <!-- FORMULARIO DE REGISTRO DUAL -->
   <div class="card">
-    <h2>Registrar Gasto</h2>
-    <form id="expense-form">
+    <div class="type-toggle">
+      <button type="button" id="tab-expense" class="active-expense" onclick="switchType('gasto')">Gasto</button>
+      <button type="button" id="tab-income" onclick="switchType('ingreso')">Ingreso</button>
+    </div>
+
+    <form id="tx-form">
       <div class="grid-2">
         <div>
           <label>Monto</label>
           <input type="number" id="amount" step="any" placeholder="0" required>
         </div>
         <div>
+          <label>Categoría</label>
+          <select id="category" required></select>
+        </div>
+      </div>
+
+      <div class="grid-2" id="expense-options-grid">
+        <div>
           <label>Método de Pago</label>
-          <select id="payment-method">
+          <select id="payment-method" onchange="toggleInstallments()">
             <option value="Efectivo">Efectivo</option>
             <option value="Transferencia / Débito">Nequi / Débito</option>
             <option value="Crédito">Tarjeta Crédito</option>
           </select>
         </div>
+        <div>
+          <label>Naturaleza</label>
+          <select id="expense-nature">
+            <option value="Variable">Variable</option>
+            <option value="Fijo">Fijo (Obligatorio)</option>
+          </select>
+        </div>
       </div>
 
-      <label>Categoría</label>
-      <select id="category" required>
-        <option value="Alimentación">Alimentación</option>
-        <option value="Transporte">Transporte</option>
-        <option value="Servicios/Facturas">Servicios / Facturas</option>
-        <option value="Materiales/Estudio">Materiales / Estudio</option>
-        <option value="Ocio">Ocio</option>
-        <option value="Salud">Salud</option>
-        <option value="Otros">Otros</option>
-      </select>
+      <div id="installments-wrap" style="display: none;">
+        <label>Número de Cuotas</label>
+        <select id="installments">
+          <option value="1">1 Cuota</option>
+          <option value="2">2 Cuotas</option>
+          <option value="3">3 Cuotas</option>
+          <option value="6">6 Cuotas</option>
+          <option value="12">12 Cuotas</option>
+        </select>
+      </div>
 
       <label>Descripción</label>
-      <input type="text" id="desc" placeholder="Ej. Almuerzo o taxi">
+      <input type="text" id="desc" placeholder="Detalle (ej. Almuerzo, Salario)">
 
-      <button type="submit">Guardar Gasto</button>
+      <button type="submit" id="btn-submit">Guardar Gasto</button>
     </form>
   </div>
 
+  <!-- ANÁLISIS, GRÁFICOS Y METAS -->
   <div class="card">
-    <h2>Período y Meta</h2>
+    <h2>Período y Comparativa</h2>
     <div class="filter-group">
       <button class="filter-btn" onclick="setPeriod('week')">Semana</button>
       <button class="filter-btn active" onclick="setPeriod('month')">Mes</button>
@@ -124,7 +173,7 @@
         <input type="month" id="selected-month" onchange="render()">
       </div>
       <div>
-        <label>Presupuesto Mes ($)</label>
+        <label>Presupuesto Gastos ($)</label>
         <input type="number" id="monthly-budget-input" placeholder="Ej. 600000" onchange="updateBudget()">
       </div>
     </div>
@@ -132,22 +181,28 @@
     <div class="chart-box">
       <canvas id="categoryChart"></canvas>
     </div>
+
+    <div class="chart-box" style="margin-top: 20px;">
+      <canvas id="comparisonChart"></canvas>
+    </div>
     
-    <div id="category-breakdown"></div>
+    <div id="category-breakdown" style="margin-top: 14px;"></div>
   </div>
 
+  <!-- HISTORIAL DE MOVIMIENTOS -->
   <div class="card">
     <h2>
       <span>Movimientos</span>
       <span id="items-count" style="font-size: 0.8rem; color: var(--text-muted);">0 registros</span>
     </h2>
-    <input type="text" id="search-input" placeholder="🔍 Buscar por concepto o categoría..." oninput="render()">
-    <div id="expense-list"></div>
+    <input type="text" id="search-input" placeholder="🔍 Buscar por concepto, tipo o categoría..." oninput="render()">
+    <div id="tx-list"></div>
   </div>
 
+  <!-- EXPORTACIÓN Y BACKUP -->
   <div class="card">
     <h2>Exportación y Respaldo</h2>
-    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Descarga tus datos para abrirlos en Excel o guarda un archivo de recuperación.</p>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Descarga tus datos completos para Excel o genera tu copia de seguridad.</p>
     <div class="backup-actions">
       <button onclick="exportCSV()" class="btn-outline">📊 Excel (CSV)</button>
       <button onclick="exportJSON()" class="btn-outline">💾 Backup</button>
@@ -161,35 +216,92 @@
       navigator.serviceWorker.register('./sw.js');
     }
 
-    let expenses = JSON.parse(localStorage.getItem('expenses_db')) || [];
+    const EXPENSE_CATEGORIES = ['Alimentación', 'Transporte', 'Servicios/Facturas', 'Materiales/Estudio', 'Ocio', 'Salud', 'Otros'];
+    const INCOME_CATEGORIES = ['Salario', 'Rendimientos / Inversión', 'Ventas', 'Honorarios', 'Transferencias', 'Otros'];
+
+    let records = JSON.parse(localStorage.getItem('expenses_db')) || [];
+    // Migrar registros antiguos si no tenían tipo asignado
+    records = records.map(r => ({ ...r, type: r.type || 'gasto' }));
+
     let budgets = JSON.parse(localStorage.getItem('budgets_db')) || {};
     let currentPeriod = 'month';
-    let chartInstance = null;
+    let currentTypeMode = 'gasto';
+    let catChart = null;
+    let compChart = null;
 
     const today = new Date();
     const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     document.getElementById('selected-month').value = currentYearMonth;
     document.getElementById('monthly-budget-input').value = budgets[currentYearMonth] || '';
 
-    const form = document.getElementById('expense-form');
+    function switchType(type) {
+      currentTypeMode = type;
+      const btnExp = document.getElementById('tab-expense');
+      const btnInc = document.getElementById('tab-income');
+      const submitBtn = document.getElementById('btn-submit');
+      const expOptions = document.getElementById('expense-options-grid');
+      const catSelect = document.getElementById('category');
+
+      if (type === 'gasto') {
+        btnExp.className = 'active-expense';
+        btnInc.className = '';
+        submitBtn.innerText = 'Guardar Gasto';
+        submitBtn.style.background = 'var(--primary)';
+        expOptions.style.display = 'grid';
+        catSelect.innerHTML = EXPENSE_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+      } else {
+        btnInc.className = 'active-income';
+        btnExp.className = '';
+        submitBtn.innerText = 'Guardar Ingreso';
+        submitBtn.style.background = 'var(--success)';
+        expOptions.style.display = 'none';
+        document.getElementById('installments-wrap').style.display = 'none';
+        catSelect.innerHTML = INCOME_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+      }
+    }
+    switchType('gasto');
+
+    function toggleInstallments() {
+      const method = document.getElementById('payment-method').value;
+      document.getElementById('installments-wrap').style.display = (method === 'Crédito') ? 'block' : 'none';
+    }
+
+    const form = document.getElementById('tx-form');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const amount = parseFloat(document.getElementById('amount').value);
       const category = document.getElementById('category').value;
-      const method = document.getElementById('payment-method').value;
       const desc = document.getElementById('desc').value.trim() || category;
       const date = new Date().toISOString();
 
-      expenses.push({ id: Date.now(), amount, category, method, desc, date });
-      saveExpenses();
+      const newRecord = {
+        id: Date.now(),
+        type: currentTypeMode,
+        amount,
+        category,
+        desc,
+        date
+      };
+
+      if (currentTypeMode === 'gasto') {
+        newRecord.method = document.getElementById('payment-method').value;
+        newRecord.nature = document.getElementById('expense-nature').value;
+        if (newRecord.method === 'Crédito') {
+          newRecord.installments = document.getElementById('installments').value;
+        }
+      }
+
+      records.push(newRecord);
+      saveRecords();
       form.reset();
+      switchType(currentTypeMode);
 
       if (navigator.vibrate) navigator.vibrate(40);
       render();
     });
 
-    function saveExpenses() {
-      localStorage.setItem('expenses_db', JSON.stringify(expenses));
+    function saveRecords() {
+      localStorage.setItem('expenses_db', JSON.stringify(records));
     }
 
     function updateBudget() {
@@ -217,19 +329,19 @@
       render();
     }
 
-    function deleteExpense(id) {
+    function deleteRecord(id) {
       if (confirm('¿Eliminar este registro?')) {
-        expenses = expenses.filter(i => i.id !== id);
-        saveExpenses();
+        records = records.filter(i => i.id !== id);
+        saveRecords();
         render();
       }
     }
 
-    function filterExpenses() {
+    function filterRecords() {
       const now = new Date();
       const query = (document.getElementById('search-input').value || '').toLowerCase();
 
-      return expenses.filter(item => {
+      return records.filter(item => {
         const itemDate = new Date(item.date);
         let periodMatch = true;
 
@@ -241,21 +353,22 @@
           periodMatch = itemDate.getFullYear() === selectedYear && (itemDate.getMonth() + 1) === selectedMonth;
         }
 
-        const searchMatch = item.desc.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+        const searchMatch = item.desc.toLowerCase().includes(query) || 
+                            item.category.toLowerCase().includes(query) ||
+                            item.type.toLowerCase().includes(query);
         return periodMatch && searchMatch;
       });
     }
 
-    function updateChart(categories) {
+    function updateCategoryChart(categories) {
       const ctx = document.getElementById('categoryChart').getContext('2d');
       const labels = Object.keys(categories);
       const data = Object.values(categories);
 
-      if (chartInstance) chartInstance.destroy();
-
+      if (catChart) catChart.destroy();
       if (labels.length === 0) return;
 
-      chartInstance = new Chart(ctx, {
+      catChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: labels,
@@ -269,31 +382,82 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            title: { display: true, text: 'Gastos por Categoría', font: { size: 12 } },
+            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
           }
         }
       });
     }
 
-    function renderBudget(total) {
+    function updateComparisonChart() {
+      const ctx = document.getElementById('comparisonChart').getContext('2d');
+      const [currentYear, currentMonth] = document.getElementById('selected-month').value.split('-').map(Number);
+
+      const prevDate = new Date(currentYear, currentMonth - 2, 1);
+      const prevYear = prevDate.getFullYear();
+      const prevMonth = prevDate.getMonth() + 1;
+
+      let currentMonthExpenses = 0;
+      let prevMonthExpenses = 0;
+
+      records.forEach(r => {
+        if (r.type !== 'gasto') return;
+        const d = new Date(r.date);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        if (y === currentYear && m === currentMonth) currentMonthExpenses += r.amount;
+        if (y === prevYear && m === prevMonth) prevMonthExpenses += r.amount;
+      });
+
+      if (compChart) compChart.destroy();
+
+      const prevMonthName = prevDate.toLocaleDateString('es-CO', { month: 'short' });
+      const currMonthName = new Date(currentYear, currentMonth - 1, 1).toLocaleDateString('es-CO', { month: 'short' });
+
+      compChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [prevMonthName.toUpperCase(), currMonthName.toUpperCase()],
+          datasets: [{
+            label: 'Total Gastado',
+            data: [prevMonthExpenses, currentMonthExpenses],
+            backgroundColor: ['#94a3b8', '#2563eb'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: { display: true, text: 'Gasto: Mes Anterior vs. Mes Actual', font: { size: 12 } },
+            legend: { display: false }
+          },
+          scales: {
+            y: { ticks: { callback: (val) => '$' + (val/1000) + 'k' } }
+          }
+        }
+      });
+    }
+
+    function renderBudget(totalExpenses) {
       const monthKey = document.getElementById('selected-month').value;
       const budget = budgets[monthKey];
       const statusText = document.getElementById('budget-status-text');
       const bar = document.getElementById('budget-progress-bar');
 
       if (currentPeriod === 'month' && budget) {
-        const pct = Math.min((total / budget) * 100, 100);
+        const pct = Math.min((totalExpenses / budget) * 100, 100);
         bar.style.width = pct + '%';
 
         if (pct < 70) {
           bar.style.backgroundColor = 'var(--success)';
-          statusText.innerText = `Presupuesto: $${total.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
+          statusText.innerText = `Límite: $${totalExpenses.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
         } else if (pct < 90) {
           bar.style.backgroundColor = 'var(--warning)';
-          statusText.innerText = `Atención: $${total.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
+          statusText.innerText = `Atención: $${totalExpenses.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
         } else {
           bar.style.backgroundColor = 'var(--danger)';
-          statusText.innerText = `Límite: $${total.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
+          statusText.innerText = `Alerta Límite: $${totalExpenses.toLocaleString('es-CO')} de $${budget.toLocaleString('es-CO')} (${pct.toFixed(0)}%)`;
         }
       } else {
         bar.style.width = '0%';
@@ -302,88 +466,107 @@
     }
 
     function render() {
-      const filtered = filterExpenses();
-      const total = filtered.reduce((sum, item) => sum + item.amount, 0);
+      const filtered = filterRecords();
+      
+      const totalIncome = filtered.filter(i => i.type === 'ingreso').reduce((acc, i) => acc + i.amount, 0);
+      const totalExpense = filtered.filter(i => i.type === 'gasto').reduce((acc, i) => acc + i.amount, 0);
+      const netBalance = totalIncome - totalExpense;
 
-      document.getElementById('total-display').innerText = '$' + total.toLocaleString('es-CO');
+      // Actualizar Métricas
+      document.getElementById('net-display').innerText = (netBalance >= 0 ? '+$' : '-$') + Math.abs(netBalance).toLocaleString('es-CO');
+      document.getElementById('income-display').innerText = '+$' + totalIncome.toLocaleString('es-CO');
+      document.getElementById('expense-display').innerText = '-$' + totalExpense.toLocaleString('es-CO');
+      
+      const savingsRate = totalIncome > 0 ? Math.max(0, ((netBalance / totalIncome) * 100)).toFixed(0) : 0;
+      document.getElementById('savings-rate-display').innerText = `${savingsRate}%`;
+
       document.getElementById('items-count').innerText = `${filtered.length} registro${filtered.length === 1 ? '' : 's'}`;
 
       if (currentPeriod === 'week') {
-        document.getElementById('report-title').innerText = 'Gasto Últimos 7 Días';
+        document.getElementById('report-title').innerText = 'Balance Últimos 7 Días';
       } else if (currentPeriod === 'month') {
         const [y, m] = document.getElementById('selected-month').value.split('-');
         const dateObj = new Date(y, m - 1, 1);
         const name = dateObj.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
-        document.getElementById('report-title').innerText = `Gasto (${name})`;
+        document.getElementById('report-title').innerText = `Balance (${name})`;
         document.getElementById('monthly-budget-input').value = budgets[`${y}-${m}`] || '';
       } else {
-        document.getElementById('report-title').innerText = 'Gasto Histórico Total';
+        document.getElementById('report-title').innerText = 'Balance Histórico Total';
       }
 
-      renderBudget(total);
+      renderBudget(totalExpense);
 
+      // Desglose de Gastos por Categoría
       const categories = {};
-      filtered.forEach(i => categories[i.category] = (categories[i.category] || 0) + i.amount);
+      filtered.filter(i => i.type === 'gasto').forEach(i => categories[i.category] = (categories[i.category] || 0) + i.amount);
 
       const breakdownDiv = document.getElementById('category-breakdown');
-      breakdownDiv.innerHTML = Object.keys(categories).length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:10px;">Sin gastos en este período.</p>' : '';
+      breakdownDiv.innerHTML = Object.keys(categories).length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:8px;">Sin gastos en este período.</p>' : '';
       for (const [cat, sum] of Object.entries(categories)) {
-        const pct = total > 0 ? ((sum / total) * 100).toFixed(1) : 0;
+        const pct = totalExpense > 0 ? ((sum / totalExpense) * 100).toFixed(1) : 0;
         breakdownDiv.innerHTML += `
           <div class="category-row">
             <span><strong>${cat}</strong> (${pct}%)</span>
-            <span>$${sum.toLocaleString('es-CO')}</span>
+            <span>-$${sum.toLocaleString('es-CO')}</span>
           </div>`;
       }
 
-      updateChart(categories);
+      updateCategoryChart(categories);
+      updateComparisonChart();
 
-      const listDiv = document.getElementById('expense-list');
+      // Lista de Movimientos
+      const listDiv = document.getElementById('tx-list');
       const recent = [...filtered].reverse();
-      listDiv.innerHTML = recent.length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 12px;">No se encontraron movimientos.</p>' : '';
+      listDiv.innerHTML = recent.length === 0 ? '<p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 12px;">Sin registros encontrados.</p>' : '';
       recent.forEach(i => {
         const d = new Date(i.date);
         const dateStr = `${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const isExp = i.type === 'gasto';
+
         listDiv.innerHTML += `
           <div class="list-item">
             <div>
               <div style="font-weight: 600;">${i.desc}</div>
               <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
                 <span class="badge">${i.category}</span>
-                <span class="badge-method">${i.method || 'Efectivo'}</span>
+                ${isExp ? `<span class="badge-sub">${i.method || 'Efectivo'}</span>` : ''}
+                ${isExp && i.nature ? `<span class="badge-sub">${i.nature}</span>` : ''}
+                ${isExp && i.installments && i.installments > 1 ? `<span class="badge-sub">${i.installments} cuotas</span>` : ''}
                 <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 2px;">${dateStr}</span>
               </div>
             </div>
             <div style="text-align: right; display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; color: var(--danger); font-size: 0.95rem;">-$${i.amount.toLocaleString('es-CO')}</span>
-              <button onclick="deleteExpense(${i.id})" class="btn-danger">✕</button>
+              <span style="font-weight: 700; color: ${isExp ? 'var(--danger)' : 'var(--success)'}; font-size: 0.95rem;">
+                ${isExp ? '-' : '+'}$${i.amount.toLocaleString('es-CO')}
+              </span>
+              <button onclick="deleteRecord(${i.id})" class="btn-danger">✕</button>
             </div>
           </div>`;
       });
     }
 
     function exportCSV() {
-      if (expenses.length === 0) return alert('No hay datos para exportar.');
-      let csvContent = 'data:text/csv;charset=utf-8,ID;Fecha;Hora;Categoria;Descripcion;Metodo;Monto\n';
-      expenses.forEach(e => {
+      if (records.length === 0) return alert('No hay datos para exportar.');
+      let csvContent = 'data:text/csv;charset=utf-8,ID;Tipo;Fecha;Hora;Categoria;Descripcion;Metodo;Naturaleza;Cuotas;Monto\n';
+      records.forEach(e => {
         const d = new Date(e.date);
         const fecha = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
         const hora = `${d.getHours()}:${d.getMinutes()}`;
-        csvContent += `${e.id};${fecha};${hora};"${e.category}";"${e.desc}";"${e.method || 'Efectivo'}";${e.amount}\n`;
+        csvContent += `${e.id};${e.type};${fecha};${hora};"${e.category}";"${e.desc}";"${e.method || ''}";"${e.nature || ''}";"${e.installments || 1}";${e.amount}\n`;
       });
       const link = document.createElement('a');
       link.setAttribute('href', encodeURI(csvContent));
-      link.setAttribute('download', `gastos_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute('download', `balance_financiero_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
     function exportJSON() {
-      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({ expenses, budgets }));
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({ expenses: records, budgets }));
       const link = document.createElement('a');
       link.setAttribute('href', dataStr);
-      link.setAttribute('download', `backup_gastos_${new Date().toISOString().slice(0,10)}.json`);
+      link.setAttribute('download', `backup_financiero_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -397,17 +580,17 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed.expenses) {
-            expenses = parsed.expenses;
+            records = parsed.expenses.map(r => ({ ...r, type: r.type || 'gasto' }));
             budgets = parsed.budgets || {};
           } else if (Array.isArray(parsed)) {
-            expenses = parsed;
+            records = parsed.map(r => ({ ...r, type: r.type || 'gasto' }));
           }
-          saveExpenses();
+          saveRecords();
           localStorage.setItem('budgets_db', JSON.stringify(budgets));
           render();
-          alert('Datos restaurados correctamente.');
+          alert('Copia restaurada correctamente.');
         } catch (err) {
-          alert('El archivo seleccionado no es válido.');
+          alert('El archivo no es válido.');
         }
       };
       reader.readAsText(file);
